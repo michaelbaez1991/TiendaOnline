@@ -4,6 +4,8 @@ const port = 3000
 const mysql = require('mysql');
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
+var path = require('path');
+var fs = require('fs');
 
 oApp.use(express.json());  
 oApp.use(express.urlencoded({ extended: true }));
@@ -16,17 +18,10 @@ const oMyConnection = mysql.createConnection({
     database: 'tiendaonline'   
 });
 
-oApp.post('/upload', multipartMiddleware, function(req, resp) {
-    // console.log(req.body, req.files);
-    console.log(req.body.ejemplo);
-    // don't forget to delete all req.files when done
-});
-
 // ALL METHOD REQUEST GET - POST - PUT - DELETE
-oApp.all('/producto', function (req, res, next) {
+oApp.all('/producto', multipartMiddleware, function (req, res, next) {
     var oDataOP = {};  
     oDataOP = req.body;
-    console.log(req.body);
   
     switch (req.method) {
       case 'GET':
@@ -39,11 +34,16 @@ oApp.all('/producto', function (req, res, next) {
         break;
   
       case 'POST':
+        var nombreNuevo = oDataOP.nombre; // NOMBRE QUE LLEVARA EL ARCHIVO
+        var rutaArchivo = req.files.foto.path; // GUARDAR EN ARCHIVOS TMP
+        var nuevaRuta = "public/imgproductos/" + nombreNuevo + path.extname(rutaArchivo).toLowerCase(); // CONSTRUYO LA RUTA DONDE SE GUARDARA
+        fs.createReadStream(rutaArchivo).pipe(fs.createWriteStream(nuevaRuta)); // COPIA EL ARCHIVO DE TMP A LA NUEVA RUTA
+
         var sSQLCreate = "INSERT INTO producto (sku, nombre, descripcion, foto, precio, iva) VALUES (";
           sSQLCreate += "'" + oDataOP.sku + "', ";
           sSQLCreate += "'" + oDataOP.nombre + "', ";
           sSQLCreate += "'" + oDataOP.descripcion + "', ";
-          sSQLCreate += "'" + oDataOP.foto + "', ";
+          sSQLCreate += "'" + nuevaRuta + "', ";
           sSQLCreate += "'" + oDataOP.precio + "', ";
           sSQLCreate += "'" + oDataOP.iva + "')";
             
