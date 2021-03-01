@@ -143,9 +143,15 @@ oApp.post('/venta', function (req, res) {
         sSQLCreate += "'" + oDataOP.iva + "', ";
         sSQLCreate += "'" + oDataOP.gran_total + "')";
         
-        oMyConnection.query(sSQLCreate, function(oError, oRows, oCols) {
+        oMyConnection.query(sSQLCreate, function (error, results, fields) {
             if (error) throw error;
             var iIDCreated = results.insertId; 
+
+            oDataOP.productos.forEach(element => {
+                console.log(element);
+                relationProductsOrders(iIDCreated, element.id_producto, element.cantidad, element.valor_unitario, element.iva);
+            });
+            res.end();
         });  
     });
 });
