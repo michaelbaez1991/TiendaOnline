@@ -2,9 +2,11 @@ var express = require('express')
 const oApp = express()
 const port = 3000
 const mysql = require('mysql');
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
 
-oApp.use(express.json()); 
-oApp.use(express.urlencoded({ extended: false }));
+oApp.use(express.json());  
+oApp.use(express.urlencoded({ extended: true }));
 
 // CONFIGURACION PARA CONEXION A LA BASE DE DATOS
 const oMyConnection = mysql.createConnection({
@@ -14,10 +16,17 @@ const oMyConnection = mysql.createConnection({
     database: 'tiendaonline'   
 });
 
+oApp.post('/upload', multipartMiddleware, function(req, resp) {
+    // console.log(req.body, req.files);
+    console.log(req.body.ejemplo);
+    // don't forget to delete all req.files when done
+});
+
 // ALL METHOD REQUEST GET - POST - PUT - DELETE
 oApp.all('/producto', function (req, res, next) {
     var oDataOP = {};  
     oDataOP = req.body;
+    console.log(req.body);
   
     switch (req.method) {
       case 'GET':
@@ -108,5 +117,5 @@ oApp.all('/producto', function (req, res, next) {
 
 // PUERTO ESCUCHA DE LA APP
 oApp.listen(port, function(oReq, oRes) {
-    console.log("Servicios web gestión entidad GATO activo, en puerto 3000");   
+    console.log("Servicios web gestión de la tienda activo en el puerto 3000");   
 });
